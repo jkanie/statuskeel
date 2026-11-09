@@ -1,0 +1,5 @@
+<h2><%= @incident.title %></h2>
+<p><strong><%= @update.status.humanize %></strong> &middot; <%= @update.created_at.utc.to_fs(:long) %> UTC</p>
+<%= @update.body %>
+<p><%= link_to "See the status page", root_url %></p>
+<p style="color:#666;font-size:12px"><%= link_to "Unsubscribe", @unsubscribe_url %></p>

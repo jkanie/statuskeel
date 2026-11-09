@@ -1,0 +1,39 @@
+<%= form_with model: monitor, url: monitor.persisted? ? admin_monitor_path(monitor) : admin_monitors_path, class: "form" do |form| %>
+  <%= render "shared/errors", record: monitor %>
+
+  <%= form.label :name %>
+  <%= form.text_field :name, required: true, maxlength: 100 %>
+
+  <%= form.label :url, "URL (http or https)" %>
+  <%= form.url_field :url, required: true, placeholder: "https://example.com/health" %>
+
+  <div class="grid">
+    <div>
+      <%= form.label :interval_seconds, "Check every (seconds)" %>
+      <%= form.number_field :interval_seconds, min: 30, max: 86_400 %>
+    </div>
+    <div>
+      <%= form.label :timeout_seconds, "Timeout (seconds)" %>
+      <%= form.number_field :timeout_seconds, min: 1, max: 60 %>
+    </div>
+    <div>
+      <%= form.label :expected_status_min, "Expected HTTP status from" %>
+      <%= form.number_field :expected_status_min, min: 100, max: 599 %>
+    </div>
+    <div>
+      <%= form.label :expected_status_max, "to" %>
+      <%= form.number_field :expected_status_max, min: 100, max: 599 %>
+    </div>
+    <div>
+      <%= form.label :failure_threshold, "Failed checks in a row before an incident opens" %>
+      <%= form.number_field :failure_threshold, min: 1, max: 20 %>
+    </div>
+  </div>
+
+  <%= form.label :keyword, "Keyword the body must contain (optional)" %>
+  <%= form.text_field :keyword, maxlength: 200 %>
+
+  <label class="check"><%= form.check_box :active %> Active</label>
+
+  <%= form.submit monitor.persisted? ? "Save monitor" : "Create monitor" %>
+<% end %>

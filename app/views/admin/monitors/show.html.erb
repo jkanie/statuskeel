@@ -1,0 +1,36 @@
+<% content_for :title, @monitor.name %>
+<div class="page-head">
+  <h1><%= @monitor.name %></h1>
+  <div class="actions">
+    <%= button_to "Check now", check_admin_monitor_path(@monitor) %>
+    <%= link_to "Edit", edit_admin_monitor_path(@monitor), class: "button" %>
+    <%= button_to "Delete", admin_monitor_path(@monitor), method: :delete, class: "danger",
+          form: { data: { turbo_confirm: "Delete #{@monitor.name} and all of its checks?" } } %>
+  </div>
+</div>
+
+<dl class="facts">
+  <dt>URL</dt><dd class="wrap"><%= @monitor.url %></dd>
+  <dt>State</dt><dd><span class="state-<%= @monitor.status %>"><%= @monitor.status %></span><%= " (paused)" unless @monitor.active? %></dd>
+  <dt>Checks</dt><dd>every <%= @monitor.interval_seconds %> s, timeout <%= @monitor.timeout_seconds %> s</dd>
+  <dt>Expects</dt><dd>HTTP <%= @monitor.expected_status_min %> to <%= @monitor.expected_status_max %><%= ", body contains \"#{@monitor.keyword}\"" if @monitor.keyword %></dd>
+  <dt>Incident after</dt><dd><%= @monitor.failure_threshold %> failed checks in a row (now <%= @monitor.consecutive_failures %>)</dd>
+  <dt>90 day uptime</dt><dd><%= @history.percent ? "#{format('%.2f', @history.percent)}%" : "no data" %></dd>
+  <dt>Badge</dt><dd><code><%= badge_url(@monitor, format: :svg) %></code></dd>
+</dl>
+
+<h2>Last 50 checks</h2>
+<table class="table">
+  <thead><tr><th>Checked at (UTC)</th><th>Result</th><th>HTTP</th><th>Time (ms)</th><th>Error</th></tr></thead>
+  <tbody>
+    <% @checks.each do |check| %>
+      <tr>
+        <td><%= check.checked_at.utc.to_fs(:db) %></td>
+        <td><span class="state-<%= check.up? ? "up" : "down" %>"><%= check.up? ? "up" : "down" %></span></td>
+        <td><%= check.http_status %></td>
+        <td><%= check.response_time_ms %></td>
+        <td class="wrap"><%= check.error %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

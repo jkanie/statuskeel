@@ -1,0 +1,30 @@
+<%= form_with model: incident, url: incident.persisted? ? admin_incident_path(incident) : admin_incidents_path, class: "form" do |form| %>
+  <%= render "shared/errors", record: incident %>
+
+  <%= form.label :title %>
+  <%= form.text_field :title, required: true, maxlength: 200 %>
+
+  <div class="grid">
+    <div>
+      <%= form.label :impact %>
+      <%= form.select :impact, Incident::IMPACTS.map { |impact| [ impact.humanize, impact ] } %>
+    </div>
+    <% unless incident.persisted? %>
+      <div>
+        <%= form.label :status %>
+        <%= form.select :status, Incident::STATUSES.map { |status| [ status.humanize, status ] } %>
+      </div>
+    <% end %>
+    <div>
+      <%= form.label :uptime_monitor_id, "Monitor (optional)" %>
+      <%= form.collection_select :uptime_monitor_id, UptimeMonitor.ordered, :id, :name, include_blank: true %>
+    </div>
+  </div>
+
+  <% unless incident.persisted? %>
+    <%= form.label :body, "First update" %>
+    <%= form.rich_textarea :body, value: params.dig(:incident, :body) %>
+  <% end %>
+
+  <%= form.submit incident.persisted? ? "Save incident" : "Open incident" %>
+<% end %>

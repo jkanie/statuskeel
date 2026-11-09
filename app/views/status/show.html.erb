@@ -1,0 +1,27 @@
+<%= turbo_stream_from StatusPage::STREAM %>
+
+<header class="masthead">
+  <h1><%= @page.title %></h1>
+  <% if authenticated? %><%= link_to "Admin", admin_root_path, class: "muted" %><% end %>
+</header>
+
+<%= render "status/overall", page: @page %>
+<%= render "status/incidents", page: @page %>
+<%= render "status/monitors", page: @page %>
+
+<%= render "status/past_incidents", page: @page %>
+
+<section id="subscribe" class="card">
+  <h2>Get incident e-mails</h2>
+  <%= form_with model: @subscriber, url: subscribers_path, class: "inline-form" do |form| %>
+    <%= form.label :email_address, "E-mail address", class: "visually-hidden" %>
+    <%= form.email_field :email_address, required: true, autocomplete: "email", placeholder: "you@example.com" %>
+    <%= form.submit "Subscribe" %>
+  <% end %>
+  <p class="muted small">You get 1 e-mail to confirm, then 1 e-mail per incident update. Every e-mail has an unsubscribe link.</p>
+</section>
+
+<footer class="muted small">
+  <%= link_to "status.json", status_summary_path(format: :json) %> &middot;
+  Powered by <a href="https://github.com/jkanie/statuskeel">statuskeel</a>
+</footer>

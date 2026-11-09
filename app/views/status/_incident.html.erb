@@ -1,0 +1,16 @@
+<article id="<%= dom_id(incident) %>" class="incident">
+  <h3><%= incident.title %></h3>
+  <p class="muted small">
+    Impact: <%= incident.impact.humanize %> &middot; started <%= time_tag incident.started_at, incident.started_at.utc.to_fs(:long) %> UTC
+    <% if incident.resolved? %>&middot; resolved <%= time_tag incident.resolved_at, incident.resolved_at.utc.to_fs(:long) %> UTC<% end %>
+  </p>
+  <ol class="updates">
+    <% incident.updates.each do |update| %>
+      <li>
+        <strong><%= update.status.humanize %></strong>
+        <span class="muted small"><%= time_tag update.created_at, update.created_at.utc.to_fs(:long) %> UTC</span>
+        <div class="update-body"><%= update.body %></div>
+      </li>
+    <% end %>
+  </ol>
+</article>

@@ -1,0 +1,7 @@
+<%= @incident.title %>
+<%= @update.status.humanize %>, <%= @update.created_at.utc.to_fs(:long) %> UTC
+
+<%= @update.body.to_plain_text %>
+
+Status page: <%= root_url %>
+Unsubscribe: <%= @unsubscribe_url %>

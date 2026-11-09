@@ -1,0 +1,15 @@
+<div id="<%= dom_id(monitor) %>" class="monitor" data-status="<%= monitor.status %>">
+  <div class="monitor-head">
+    <span class="monitor-name"><%= monitor.name %></span>
+    <span class="monitor-state state-<%= monitor.status %>"><%= { "up" => "Operational", "down" => "Down", "pending" => "No checks yet" }.fetch(monitor.status) %></span>
+  </div>
+  <div class="bars" role="img" aria-label="<%= monitor.name %> daily uptime for the last <%= history.days %> days">
+    <% history.bars.each do |bar| %>
+      <span class="bar bar-<%= bar.level %>" title="<%= bar.date %>: <%= bar.percent ? "#{format('%.2f', bar.percent)}%" : "no data" %>"></span>
+    <% end %>
+  </div>
+  <p class="muted small uptime">
+    <%= history.percent ? "#{format('%.2f', history.percent)}% uptime" : "No data yet" %>
+    <% if monitor.last_checked_at %>&middot; last checked <%= time_tag monitor.last_checked_at, monitor.last_checked_at.utc.strftime("%H:%M:%S UTC") %><% end %>
+  </p>
+</div>

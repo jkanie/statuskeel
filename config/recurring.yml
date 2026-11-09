@@ -1,0 +1,17 @@
+# Recurring tasks run by the Solid Queue scheduler (bin/jobs, or inside Puma with SOLID_QUEUE_IN_PUMA).
+default: &default
+  enqueue_due_checks:
+    class: EnqueueDueChecksJob
+    schedule: every minute
+  prune_old_checks:
+    class: PruneChecksJob
+    schedule: every day at 3:15am
+
+development:
+  <<: *default
+
+production:
+  <<: *default
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12

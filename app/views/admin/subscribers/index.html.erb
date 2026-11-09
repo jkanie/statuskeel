@@ -1,0 +1,16 @@
+<% content_for :title, "Subscribers" %>
+<h1>Subscribers</h1>
+<p class="muted"><%= Subscriber.confirmed.count %> confirmed, <%= Subscriber.unconfirmed.count %> waiting for confirmation. Unconfirmed addresses are deleted after 3 days.</p>
+
+<table class="table">
+  <thead><tr><th>E-mail address</th><th>Confirmed (UTC)</th><th></th></tr></thead>
+  <tbody>
+    <% @subscribers.each do |subscriber| %>
+      <tr id="<%= dom_id(subscriber) %>">
+        <td><%= subscriber.email_address %></td>
+        <td><%= subscriber.confirmed_at&.utc&.to_fs(:db) || "not yet" %></td>
+        <td><%= button_to "Delete", admin_subscriber_path(subscriber), method: :delete, class: "danger" %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

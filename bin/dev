@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+# Start Puma with the Solid Queue supervisor inside it, so checks run in development.
+ENV["SOLID_QUEUE_IN_PUMA"] ||= "1"
+exec "./bin/rails", "server", *ARGV

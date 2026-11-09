@@ -1,0 +1,27 @@
+<% content_for :title, "Monitors" %>
+<div class="page-head">
+  <h1>Monitors</h1>
+  <%= link_to "New monitor", new_admin_monitor_path, class: "button" %>
+</div>
+
+<% if @monitors.any? %>
+  <table class="table">
+    <thead>
+      <tr><th>Name</th><th>URL</th><th>State</th><th>Every</th><th>Last check</th><th>Badge</th></tr>
+    </thead>
+    <tbody>
+      <% @monitors.each do |monitor| %>
+        <tr id="<%= dom_id(monitor) %>">
+          <td><%= link_to monitor.name, admin_monitor_path(monitor) %><%= " (paused)" unless monitor.active? %></td>
+          <td class="wrap"><%= monitor.url %></td>
+          <td><span class="state-<%= monitor.status %>"><%= monitor.status %></span></td>
+          <td><%= monitor.interval_seconds %> s</td>
+          <td><%= monitor.last_checked_at ? "#{time_ago_in_words(monitor.last_checked_at)} ago" : "never" %></td>
+          <td><%= link_to "SVG", badge_path(monitor, format: :svg) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="muted">No monitors yet.</p>
+<% end %>

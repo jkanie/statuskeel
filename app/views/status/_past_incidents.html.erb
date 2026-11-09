@@ -1,0 +1,8 @@
+<section id="past-incidents" class="card">
+  <h2>Resolved in the last 14 days</h2>
+  <% if page.resolved_incidents.any? %>
+    <%= render partial: "status/incident", collection: page.resolved_incidents %>
+  <% else %>
+    <p class="muted">No incidents.</p>
+  <% end %>
+</section>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= [ content_for(:title), "Admin", Rails.configuration.x.status_page_title ].compact.join(" | ") %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="admin">
+    <header class="admin-bar">
+      <strong><%= Rails.configuration.x.status_page_title %> admin</strong>
+      <nav>
+        <%= link_to "Monitors", admin_monitors_path %>
+        <%= link_to "Incidents", admin_incidents_path %>
+        <%= link_to "Subscribers", admin_subscribers_path %>
+        <%= link_to "Status page", root_path %>
+        <%= button_to "Sign out", session_path, method: :delete, class: "link-button" %>
+      </nav>
+    </header>
+    <main class="page page-wide">
+      <%= render "shared/flash" %>
+      <%= yield %>
+    </main>
+  </body>
+</html>

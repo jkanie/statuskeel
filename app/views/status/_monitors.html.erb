@@ -1,0 +1,10 @@
+<section id="monitors" class="card">
+  <% if page.monitors.any? %>
+    <% page.monitors.each do |monitor| %>
+      <%= render "status/monitor", monitor:, history: page.history_for(monitor) %>
+    <% end %>
+    <p class="legend muted small"><span>90 days ago</span><span>Today (UTC)</span></p>
+  <% else %>
+    <p class="muted">No monitors yet.</p>
+  <% end %>
+</section>

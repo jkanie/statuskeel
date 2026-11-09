@@ -1,0 +1,37 @@
+<% content_for :title, @incident.title %>
+<div class="page-head">
+  <h1><%= @incident.title %></h1>
+  <div class="actions">
+    <%= link_to "Edit", edit_admin_incident_path(@incident), class: "button" %>
+    <%= button_to "Delete", admin_incident_path(@incident), method: :delete, class: "danger",
+          form: { data: { turbo_confirm: "Delete this incident and its updates?" } } %>
+  </div>
+</div>
+
+<p class="muted">
+  <%= @incident.status.humanize %> &middot; impact <%= @incident.impact.humanize %>
+  <%= "· monitor #{@incident.uptime_monitor.name}" if @incident.uptime_monitor %>
+  · reply by e-mail to <code>incident+<%= @incident.id %>@</code>your inbound domain
+</p>
+
+<section class="card">
+  <h2>Post an update</h2>
+  <%= form_with model: @update, url: admin_incident_updates_path(@incident), class: "form" do |form| %>
+    <%= form.label :status %>
+    <%= form.select :status, Incident::STATUSES.map { |status| [ status.humanize, status ] } %>
+    <%= form.label :body, "Message" %>
+    <%= form.rich_textarea :body %>
+    <%= form.submit "Post update" %>
+  <% end %>
+</section>
+
+<ol class="updates">
+  <% @incident.updates.each do |update| %>
+    <% next if update.new_record? %>
+    <li>
+      <strong><%= update.status.humanize %></strong>
+      <span class="muted small"><%= update.created_at.utc.to_fs(:long) %> UTC</span>
+      <div class="update-body"><%= update.body %></div>
+    </li>
+  <% end %>
+</ol>

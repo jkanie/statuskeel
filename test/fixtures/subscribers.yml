@@ -1,0 +1,6 @@
+confirmed:
+  email_address: reader@example.com
+  confirmed_at: <%= 2.days.ago.to_fs(:db) %>
+
+unconfirmed:
+  email_address: maybe@example.com

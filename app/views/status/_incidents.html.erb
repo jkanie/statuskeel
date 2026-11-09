@@ -1,0 +1,7 @@
+<section id="incidents">
+  <% page.active_incidents.each do |incident| %>
+    <div class="card incident-active impact-<%= incident.impact %>">
+      <%= render "status/incident", incident: %>
+    </div>
+  <% end %>
+</section>

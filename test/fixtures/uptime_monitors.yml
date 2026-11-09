@@ -1,0 +1,20 @@
+website:
+  name: Website
+  url: https://example.com
+  status: up
+  last_checked_at: <%= 1.minute.ago.to_fs(:db) %>
+  next_check_at: <%= 10.seconds.from_now.to_fs(:db) %>
+
+api:
+  name: API
+  url: https://api.example.com/health
+  keyword: ok
+  failure_threshold: 3
+  status: up
+  last_checked_at: <%= 30.seconds.ago.to_fs(:db) %>
+  next_check_at: <%= 30.seconds.from_now.to_fs(:db) %>
+
+paused:
+  name: Old site
+  url: https://old.example.com
+  active: false

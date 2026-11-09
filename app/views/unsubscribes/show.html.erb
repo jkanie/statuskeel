@@ -1,0 +1,6 @@
+<% content_for :title, "Unsubscribe" %>
+<section class="card">
+  <h1>Unsubscribe</h1>
+  <p>Stop incident e-mails to <strong><%= @subscriber.email_address %></strong> and delete the address?</p>
+  <%= button_to "Unsubscribe", unsubscribe_path(params[:token]) %>
+</section>
