@@ -8,9 +8,12 @@ class IncidentsMailbox < ApplicationMailbox
       incident = Incident.find_by(id:)
       return reject("there is no incident #{id}") unless incident
 
-      incident.post_update!(body:)
+      status, text = status_line(plain_text)
+      return reject("the status \"#{status}\" is not 1 of #{Incident::STATUSES.join(", ")}") if status && !Incident::STATUSES.include?(status)
+
+      incident.post_update!(body: paragraphs(text), status: status || incident.status)
     else
-      Incident.open!(title: mail.subject.presence || "Untitled incident", body:)
+      Incident.open!(title: mail.subject.presence || "Untitled incident", body: paragraphs(plain_text))
     end
   end
 
@@ -35,12 +38,25 @@ class IncidentsMailbox < ApplicationMailbox
       nil
     end
 
-    # The new text of the e-mail as HTML paragraphs, without the quoted message of a reply.
-    def body
+    # The new text of the e-mail, without the quoted message of a reply.
+    def plain_text
       text = (mail.text_part || mail.html_part || mail).decoded.to_s
       text = ActionController::Base.helpers.strip_tags(text) if (mail.html_part && !mail.text_part) || mail.mime_type == "text/html"
       lines = text.lines.take_while { |line| !line.match?(/\AOn .+ wrote:\s*\z/) }
-      text = lines.reject { |line| line.start_with?(">") }.join.strip
+      lines.reject { |line| line.start_with?(">") }.join.strip
+    end
+
+    # A reply can start with a line such as "status: resolved". Returns the status named there
+    # (lower case, not yet checked) and the text without that line, or nil and the text as it was.
+    def status_line(text)
+      first, rest = text.split(/\r?\n/, 2)
+      match = first.to_s.match(/\A\s*status\s*:\s*(\S*)\s*\z/i)
+      return [ nil, text ] unless match
+
+      [ match[1].downcase, rest.to_s.strip ]
+    end
+
+    def paragraphs(text)
       ActionController::Base.helpers.simple_format(text.presence || "(no text)")
     end
 end

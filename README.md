@@ -1,6 +1,6 @@
 # statuskeel
 
-statuskeel is an open-source status page with uptime checks, built on Ruby on Rails 8.1. It checks your URLs on a schedule and opens an incident when a check fails a set number of times in a row. The public page shows the result and updates live in the browser with no page reload.
+statuskeel is an open-source status page with uptime checks, built on Ruby on Rails 8.1. It checks your URLs on a schedule and opens an incident when a check fails a set number of times in a row. The public page shows the result and updates live in the browser with no page re-load.
 
 It is for small teams and open-source projects that want a self-hosted status page on 1 server with no services beyond SQLite.
 
@@ -13,7 +13,7 @@ It is for small teams and open-source projects that want a self-hosted status pa
 - Incidents open on their own when a monitor reaches its failure threshold and resolve on their own when it recovers, each time with an automatic update.
 - Incidents by hand: statuses investigating, identified, monitoring, resolved. Impact none, minor, major, critical. Updates have rich text bodies (Action Text).
 - E-mail subscribers with double opt-in. Every e-mail has an unsubscribe link and supports RFC 8058 one-click unsubscribe.
-- Incidents by e-mail (Action Mailbox): an admin's e-mail to `incidents@` opens an incident, a reply to `incident+<id>@` adds an update. Mail from other senders is bounced.
+- Incidents by e-mail (Action Mailbox): an admin's e-mail to `incidents@` opens an incident, a reply to `incident+<id>@` adds an update. A reply that starts with a line such as `status: resolved` also sets the status. Mail from other senders is bounced.
 - `/status.json` for scripts and an SVG badge per monitor at `/badge/<id>.svg` for READMEs.
 - Server-side request forgery guard: addresses in private, loopback, link-local, reserved ranges are refused at save time and again at check time (also after DNS changes and redirects), unless `ALLOW_PRIVATE_TARGETS` is on.
 - Admin sign-in with the Rails 8 authentication generator. There is no public sign-up.
@@ -176,7 +176,7 @@ Both forms were run against the app in production mode. An e-mail to `incidents@
 | Address | Result |
 | --- | --- |
 | `incidents@<your domain>` | Opens an incident. The subject is the title, the body is the 1st update. |
-| `incident+<id>@<your domain>` | Adds an update to incident `<id>`. The status stays as it is: change it on the admin screen. |
+| `incident+<id>@<your domain>` | Adds an update to incident `<id>`. If the 1st line reads `status: <status>` (`investigating`, `identified`, `monitoring`, `resolved`, in any case), the incident takes that status and the line is left out of the update. Without that line the status stays as it is. Any other status bounces with a reply that lists the 4 valid ones. |
 
 Only mail whose `From` address belongs to an admin is accepted. Everything else is bounced with a short reply. The check trusts the `From` header, so let your mail server check SPF, DKIM, DMARC before it relays a message.
 
@@ -196,7 +196,7 @@ bin/ci                   # runs all of the above plus the seeds
 
 The counts are from a run on Linux with Ruby 4.0.9. Outbound HTTP is stubbed with WebMock and DNS answers are made up in `test/test_helper.rb`, so the tests do not reach the network.
 
-The system tests drive headless Chrome with Cuprite over the DevTools protocol, so no chromedriver is needed. They use the Chrome on the `PATH`, or the binary in `BROWSER_PATH`. 1 of them opens the public page and fails a monitor twice, then lets the monitor recover. After each step it checks the banner, the monitor row, the incident lists. At the end it checks that the page did not reload.
+The system tests drive headless Chrome with Cuprite over the DevTools protocol, so no chromedriver is needed. They use the Chrome on the `PATH`, or the binary in `BROWSER_PATH`. 1 of them opens the public page and fails a monitor twice, then lets the monitor recover. After each step it checks the banner, the monitor row, the incident lists. At the end it checks that the page did not re-load.
 
 GitHub Actions (`.github/workflows/ci.yml`) runs the same checks in 5 jobs: `scan_ruby`, `scan_js`, `lint`, `test`, `system-test`.
 

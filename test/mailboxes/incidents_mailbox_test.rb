@@ -34,6 +34,68 @@ class IncidentsMailboxTest < ActionMailbox::TestCase
     assert_equal "Failover done, watching error rates.", incident.updates.first.body.to_plain_text
   end
 
+  test "a reply without a status line keeps the current status" do
+    incident = Incident.open!(title: "Database failover", body: "Failing over.")
+    incident.post_update!(body: "Cause found.", status: "identified")
+
+    reply_to incident, "Still working on it."
+
+    assert incident.reload.identified?
+    assert_equal "identified", incident.updates.first.status
+    assert_equal "Still working on it.", incident.updates.first.body.to_plain_text
+  end
+
+  Incident::STATUSES.each do |status|
+    test "a reply starting with status: #{status} sets that status and drops the line" do
+      incident = Incident.open!(title: "Database failover", body: "Failing over.")
+      incident.update!(status: "identified") if status == "investigating"
+
+      assert_difference -> { incident.updates.count } => 1 do
+        reply_to incident, "Status: #{status.upcase}\nFailover done, watching error rates.\n\nOn Mon, 9 Nov 2026 someone wrote:\n> Failing over."
+      end
+
+      incident.reload
+      assert_equal status, incident.status
+      assert_equal status, incident.updates.first.status
+      assert_equal "Failover done, watching error rates.", incident.updates.first.body.to_plain_text
+      assert_equal (status == "resolved"), incident.resolved_at.present?
+    end
+  end
+
+  test "a status line with nothing after it keeps a placeholder text" do
+    incident = Incident.open!(title: "Database failover", body: "Failing over.")
+
+    reply_to incident, "status: resolved"
+
+    assert incident.reload.resolved?
+    assert_equal "(no text)", incident.updates.first.body.to_plain_text
+  end
+
+  test "a reply with an unknown status is bounced with the 4 valid ones" do
+    incident = Incident.open!(title: "Database failover", body: "Failing over.")
+    inbound = nil
+
+    assert_no_difference -> { incident.updates.count } do
+      assert_emails 1 do
+        inbound = reply_to incident, "status: fixed\nAll good."
+      end
+    end
+
+    assert inbound.bounced?
+    assert incident.reload.investigating?
+    bounce_text = ActionMailer::Base.deliveries.last.body.to_s
+    assert_includes bounce_text, 'the status "fixed" is not 1 of investigating, identified, monitoring, resolved'
+  end
+
+  test "a status line further down is kept as text" do
+    incident = Incident.open!(title: "Database failover", body: "Failing over.")
+
+    reply_to incident, "Update below.\nstatus: resolved"
+
+    assert incident.reload.investigating?
+    assert_equal "Update below.\nstatus: resolved", incident.updates.first.body.to_plain_text
+  end
+
   test "mail from anyone else is bounced" do
     inbound = nil
     assert_no_difference -> { Incident.count } do
@@ -69,4 +131,11 @@ class IncidentsMailboxTest < ActionMailbox::TestCase
     assert_equal "Images fail to load.alert(1)", body.to_plain_text
     assert_not_includes body.to_s, "<script>"
   end
+
+  private
+    def reply_to(incident, body)
+      receive_inbound_email_from_mail \
+        to: "incident+#{incident.id}@status.example.com", from: "two@example.com",
+        subject: "Re: #{incident.title}", body:
+    end
 end
