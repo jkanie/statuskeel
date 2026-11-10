@@ -15,6 +15,7 @@ It is for small teams and open-source projects that want a self-hosted status pa
 - E-mail subscribers with double opt-in. Every e-mail has an unsubscribe link and supports RFC 8058 one-click unsubscribe.
 - Incidents by e-mail (Action Mailbox): an admin's e-mail to `incidents@` opens an incident, a reply to `incident+<id>@` adds an update. A reply that starts with a line such as `status: resolved` also sets the status. Mail from other senders is bounced.
 - `/status.json` for scripts and an SVG badge per monitor at `/badge/<id>.svg` for READMEs.
+- An Atom feed of the newest 50 incident updates at `/incidents.atom`, for feed readers and for team messaging apps that post new feed entries. The public page links to it in its `<head>` and its footer.
 - Server-side request forgery guard: addresses in private, loopback, link-local, reserved ranges are refused at save time and again at check time (also after DNS changes and redirects), unless `ALLOW_PRIVATE_TARGETS` is on.
 - Admin sign-in with the Rails 8 authentication generator. There is no public sign-up.
 - Deploys to 1 server with Kamal 2. Secrets come from the environment, never from the repo.
@@ -39,6 +40,7 @@ It is for small teams and open-source projects that want a self-hosted status pa
 | `normalizes`, `enum` with `validate: true` | Models | Clean e-mail addresses and URLs, readable string enums that fail validation instead of raising. |
 | `upsert` with `on_duplicate` | `DailyUptime.record!` | Adds each check to the per-day counts in 1 statement. |
 | Jbuilder | `app/views/status/show.json.jbuilder` | The `/status.json` summary. |
+| Builder, `atom_feed` | `app/views/incident_feeds/show.atom.builder` | The `/incidents.atom` feed. |
 | Propshaft, import maps | `app/assets`, `config/importmap.rb` | CSS and JavaScript without Node or a build step. |
 | Kamal 2, Thruster | `config/deploy.yml`, `.kamal/secrets`, `Dockerfile` | Container deploy to 1 server with automatic TLS. |
 | Minitest, Capybara | `test/` | Tests for models, jobs, mailers, the mailbox, the cable connection, controllers, integration flows, the browser (system tests). |

@@ -1,4 +1,5 @@
 <%= turbo_stream_from StatusPage::STREAM %>
+<% content_for :head, auto_discovery_link_tag(:atom, incidents_feed_url(format: :atom), title: "#{@page.title} incidents") %>
 
 <header class="masthead">
   <h1><%= @page.title %></h1>
@@ -23,5 +24,6 @@
 
 <footer class="muted small">
   <%= link_to "status.json", status_summary_path(format: :json) %> &middot;
+  <%= link_to "Incident feed (Atom)", incidents_feed_path(format: :atom) %> &middot;
   Powered by <a href="https://github.com/jkanie/statuskeel">statuskeel</a>
 </footer>
