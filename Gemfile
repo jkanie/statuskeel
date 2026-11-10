@@ -39,8 +39,10 @@ gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # image_processing 2 no longer pulls in ruby-vips, so it is named here (libvips is in the Docker image).
+# require: false leaves loading it to Active Storage, which skips it when libvips is missing, so commands
+# that boot the app (bin/importmap audit in CI, for one) also run on a machine without libvips.
 gem "image_processing", "~> 2.2"
-gem "ruby-vips", "~> 2.3"
+gem "ruby-vips", "~> 2.3", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
