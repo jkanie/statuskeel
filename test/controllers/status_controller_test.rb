@@ -14,8 +14,10 @@ class StatusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "shows open incidents with their updates and recent resolved ones" do
+    freeze_time
     open = Incident.open!(title: "Checkout fails", body: "We are on it.", impact: :major)
     done = Incident.open!(title: "Slow search", body: "Looking.")
+    travel 2.hours + 5.minutes
     done.post_update!(status: :resolved, body: "Fixed.")
 
     get root_path
@@ -23,6 +25,8 @@ class StatusControllerTest < ActionDispatch::IntegrationTest
     assert_select "#overall", text: /Partial outage/
     assert_select "#incidents #incident_#{open.id}", text: /We are on it\./
     assert_select "#past-incidents #incident_#{done.id}", text: /Fixed\./
+    assert_select "#past-incidents #incident_#{done.id} p.muted", text: /lasted 2 hours 5 minutes/
+    assert_select "#incidents #incident_#{open.id} p.muted", text: /lasted/, count: 0
   end
 
   test "does not show monitor URLs to the public" do

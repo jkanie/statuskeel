@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  # Public status page, its JSON summary, the README badges and the incident feed.
+  # Public status page, its JSON summary, the README badges, the incident feed.
   root "status#show"
   get "status", to: "status#show", format: true, constraints: { format: :json }, as: :status_summary
   get "badge/:id", to: "badges#show", format: true, constraints: { format: :svg, id: /\d+/ }, as: :badge

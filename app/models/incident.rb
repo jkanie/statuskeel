@@ -35,6 +35,11 @@ class Incident < ApplicationRecord
     end
   end
 
+  # Seconds from the start to the resolution, or nil while the incident is not resolved.
+  def duration
+    resolved_at - started_at if resolved? && resolved_at
+  end
+
   private
     def stamp_resolved_at
       self.resolved_at = resolved? ? (resolved_at || Time.current) : nil

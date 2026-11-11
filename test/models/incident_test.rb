@@ -23,6 +23,14 @@ class IncidentTest < ActiveSupport::TestCase
     assert_equal %w[resolved identified investigating], incident.updates.map(&:status)
   end
 
+  test "duration runs from the start to the resolution" do
+    incident = Incident.open!(title: "Slow", body: "Looking.")
+    assert_nil incident.duration
+    travel 95.minutes
+    incident.post_update!(status: :resolved, body: "Fixed.")
+    assert_in_delta 95.minutes.to_f, incident.duration, 1.0
+  end
+
   test "re-opening clears resolved_at" do
     incident = Incident.open!(title: "Login errors", body: "Looking into it.")
     incident.post_update!(status: :resolved, body: "Fixed.")

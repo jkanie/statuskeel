@@ -1,4 +1,4 @@
-# The incident updates as an Atom feed at /incidents.atom, newest first, for feed readers and
+# The incident updates as an Atom feed at /incidents.atom, newest at the top, for feed readers and
 # for team messaging apps that post new feed entries. No sign-in needed: it holds what the public page shows.
 class IncidentFeedsController < ApplicationController
   allow_unauthenticated_access

@@ -12,6 +12,7 @@ It is for small teams and open-source projects that want a self-hosted status pa
 - Checks run as Solid Queue jobs. Each check honours the timeout and follows at most 3 redirects. A check stores its result (up or down), HTTP status, response time, error text.
 - Incidents open on their own when a monitor reaches its failure threshold and resolve on their own when it recovers, each time with an automatic update.
 - Incidents by hand: statuses investigating, identified, monitoring, resolved. Impact none, minor, major, critical. Updates have rich text bodies (Action Text).
+- A resolved incident on the public page shows how long it lasted, from its start to its resolution in whole days, hours, minutes ("lasted 2 hours 5 minutes").
 - E-mail subscribers with double opt-in. Every e-mail has an unsubscribe link and supports RFC 8058 one-click unsubscribe.
 - Incidents by e-mail (Action Mailbox): an admin's e-mail to `incidents@` opens an incident, a reply to `incident+<id>@` adds an update. A reply that starts with a line such as `status: resolved` also sets the status. Mail from other senders is bounced.
 - `/status.json` for scripts and an SVG badge per monitor at `/badge/<id>.svg` for READMEs.
