@@ -47,6 +47,9 @@ class StatusControllerTest < ActionDispatch::IntegrationTest
     assert_equal %w[API Website], json["monitors"].pluck("name")
     website = json["monitors"].find { |monitor| monitor["name"] == "Website" }
     assert_equal 75.0, website["uptime_90d"]
+    assert_equal 75.0, website["uptime_30d"]
+    assert_equal 75.0, website["uptime_7d"]
+    assert_nil json["monitors"].find { |monitor| monitor["name"] == "API" }["uptime_7d"]
     assert_equal "http://www.example.com/badge/#{uptime_monitors(:website).id}.svg", website["badge_url"]
     assert_not website.key?("url")
     assert_equal [ incident.id ], json["incidents"].pluck("id")

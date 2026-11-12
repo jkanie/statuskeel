@@ -36,4 +36,13 @@ class UptimeHistory
   def percent
     self.class.percent(@rows.sum(&:up_count), @rows.sum(&:checks_count))
   end
+
+  # The uptime percentage of the last `last` days up to today, today included,
+  # or nil when those days hold no check. `last` may not be above `days`.
+  def percent_over(last)
+    raise ArgumentError, "last must be from 1 to #{days}" unless last.between?(1, days)
+
+    rows = @rows.select { |row| row.date > today - last && row.date <= today }
+    self.class.percent(rows.sum(&:up_count), rows.sum(&:checks_count))
+  end
 end

@@ -126,4 +126,22 @@ class UptimeMonitorTest < ActiveSupport::TestCase
     assert_equal "none", history.bars.first.level
     assert_equal 97.5, history.percent
   end
+
+  test "history gives the uptime percentage of the last 7 and 30 days" do
+    monitor = uptime_monitors(:website)
+    today = Date.new(2026, 11, 9)
+    monitor.daily_uptimes.create!(date: today, checks_count: 100, up_count: 100)
+    monitor.daily_uptimes.create!(date: today - 6, checks_count: 100, up_count: 90)
+    # 7 days back is the 8th day, so only the 30-day figure counts it.
+    monitor.daily_uptimes.create!(date: today - 7, checks_count: 100, up_count: 50)
+    monitor.daily_uptimes.create!(date: today - 30, checks_count: 100, up_count: 0)
+
+    history = monitor.history(today:)
+    assert_equal 95.0, history.percent_over(7)
+    assert_equal 80.0, history.percent_over(30)
+    assert_equal 60.0, history.percent
+    assert_nil monitor.history(today: today + 60).percent_over(7)
+    assert_raises(ArgumentError) { history.percent_over(0) }
+    assert_raises(ArgumentError) { history.percent_over(91) }
+  end
 end

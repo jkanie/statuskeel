@@ -15,6 +15,8 @@ json.monitors @page.monitors do |monitor|
   json.name monitor.name
   json.status monitor.status
   json.uptime_90d history.percent
+  json.uptime_30d history.percent_over(30)
+  json.uptime_7d history.percent_over(7)
   json.last_checked_at monitor.last_checked_at&.utc&.iso8601
   json.badge_url badge_url(monitor, format: :svg)
 end
