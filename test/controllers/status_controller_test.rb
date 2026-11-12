@@ -11,6 +11,7 @@ class StatusControllerTest < ActionDispatch::IntegrationTest
     assert_select "#uptime_monitor_#{uptime_monitors(:website).id} .bar", 90
     assert_select ".monitor-name", text: "Old site", count: 0
     assert_select "form[action=?]", subscribers_path
+    assert_no_match(/public/, response.headers["Cache-Control"])
   end
 
   test "shows open incidents with their updates and recent resolved ones" do
@@ -42,6 +43,7 @@ class StatusControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal "application/json", response.media_type
+    assert_equal "max-age=60, public", response.headers["Cache-Control"]
     json = response.parsed_body
     assert_equal({ "indicator" => "major", "description" => "Partial outage" }, json["status"])
     assert_equal %w[API Website], json["monitors"].pluck("name")
