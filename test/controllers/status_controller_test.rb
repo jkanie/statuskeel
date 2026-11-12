@@ -51,5 +51,24 @@ class StatusControllerTest < ActionDispatch::IntegrationTest
     assert_not website.key?("url")
     assert_equal [ incident.id ], json["incidents"].pluck("id")
     assert_equal "We are on it.", json["incidents"].first["updates"].first["body"]
+    assert_equal [], json["resolved_incidents"]
+  end
+
+  test "status.json lists recent resolved incidents with how long each lasted" do
+    freeze_time
+    old = Incident.open!(title: "Old outage", body: "Down.")
+    old.post_update!(status: :resolved, body: "Fixed.")
+    travel 15.days
+    done = Incident.open!(title: "Slow search", body: "Looking.", impact: :major)
+    travel 2.hours + 5.minutes + 30.seconds
+    done.post_update!(status: :resolved, body: "Fixed.")
+    Incident.open!(title: "Still open", body: "Looking.")
+
+    get status_summary_path(format: :json)
+
+    resolved = response.parsed_body["resolved_incidents"]
+    assert_equal [ { "id" => done.id, "title" => "Slow search", "impact" => "major",
+                     "started_at" => done.started_at.utc.iso8601, "resolved_at" => Time.current.utc.iso8601,
+                     "duration_seconds" => 7530 } ], resolved
   end
 end

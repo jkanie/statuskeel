@@ -31,3 +31,13 @@ json.incidents @page.active_incidents do |incident|
     json.created_at update.created_at.utc.iso8601
   end
 end
+
+# The same incidents as "Resolved in the last 14 days" on the page (the 5 most recent).
+json.resolved_incidents @page.resolved_incidents do |incident|
+  json.id incident.id
+  json.title incident.title
+  json.impact incident.impact
+  json.started_at incident.started_at.utc.iso8601
+  json.resolved_at incident.resolved_at.utc.iso8601
+  json.duration_seconds incident.duration.to_i
+end
