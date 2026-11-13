@@ -2,6 +2,15 @@
 <h1>Subscribers</h1>
 <p class="muted"><%= Subscriber.confirmed.count %> confirmed, <%= Subscriber.unconfirmed.count %> waiting for confirmation. Unconfirmed addresses are deleted after 3 days.</p>
 
+<%= form_with url: admin_subscribers_path, method: :get, class: "search" do |form| %>
+  <%= form.label :q, "Find an address" %>
+  <%= form.search_field :q, value: @query %>
+  <%= form.submit "Find", name: nil %>
+<% end %>
+<% if @query.present? %>
+  <p class="muted"><%= pluralize(@subscribers.size, "address") %> holding "<%= @query %>". <%= link_to "Show all", admin_subscribers_path %></p>
+<% end %>
+
 <table class="table">
   <thead><tr><th>E-mail address</th><th>Confirmed (UTC)</th><th></th></tr></thead>
   <tbody>
