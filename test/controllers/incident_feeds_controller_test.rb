@@ -32,6 +32,34 @@ class IncidentFeedsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 3, feed.xpath("/feed/entry/id").map(&:text).uniq.size
   end
 
+  test "a feed reader with the current ETag gets 304 until an entry changes" do
+    incident = Incident.open!(title: "Checkout fails", body: "We are on it.", impact: :major)
+    get incidents_feed_path(format: :atom)
+    assert_response :success
+    etag = response.headers["ETag"]
+    assert etag.present?
+
+    get incidents_feed_path(format: :atom), headers: { "If-None-Match" => etag }
+    assert_response :not_modified
+    assert_empty response.body
+    assert_equal "max-age=60, public", response.headers["Cache-Control"]
+
+    # A new update, a new title, an edited body: each gives the full feed again with a new ETag.
+    changes = [
+      -> { incident.post_update!(status: :identified, body: "Found it.") },
+      -> { incident.update!(title: "Checkout and cart fail") },
+      -> { incident.updates.first.update!(body: "We are on it, with the payment team.") }
+    ]
+    changes.each do |change|
+      travel 1.second
+      change.call
+      get incidents_feed_path(format: :atom), headers: { "If-None-Match" => etag }
+      assert_response :success
+      assert_not_equal etag, response.headers["ETag"]
+      etag = response.headers["ETag"]
+    end
+  end
+
   test "an empty feed is still valid" do
     get incidents_feed_path(format: :atom)
 
