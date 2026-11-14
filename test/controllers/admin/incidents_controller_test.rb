@@ -68,4 +68,33 @@ class Admin::IncidentsControllerTest < ActionDispatch::IntegrationTest
       delete admin_incident_path(incident)
     end
   end
+
+  test "keeps only the unresolved or the resolved incidents" do
+    Incident.open!(title: "Checkout fails", body: "Looking.")
+    Incident.open!(title: "Slow search", body: "Looking.").post_update!(status: :resolved, body: "Fixed.")
+
+    get admin_incidents_path
+    assert_select "tbody tr", 2
+    assert_select "a[href=?]", admin_incidents_path(state: "unresolved"), text: "1 unresolved"
+    assert_select "a[href=?]", admin_incidents_path(state: "resolved"), text: "1 resolved"
+    assert_select "a", text: "Show all", count: 0
+
+    get admin_incidents_path, params: { state: "unresolved" }
+    assert_select "tbody tr", 1
+    assert_select "tbody a", "Checkout fails"
+    assert_select "p", text: /Showing only the unresolved ones\./
+    assert_select "a[href=?]", admin_incidents_path, text: "Show all"
+
+    get admin_incidents_path, params: { state: "resolved" }
+    assert_select "tbody tr", 1
+    assert_select "tbody a", "Slow search"
+
+    Incident.resolved.destroy_all
+    get admin_incidents_path, params: { state: "resolved" }
+    assert_select "p", text: "No resolved incidents."
+
+    get admin_incidents_path, params: { state: "destroy_all" }
+    assert_select "tbody tr", 1
+    assert_select "a", text: "Show all", count: 0
+  end
 end

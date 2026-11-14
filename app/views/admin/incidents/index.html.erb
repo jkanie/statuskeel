@@ -4,6 +4,8 @@
   <%= link_to "New incident", new_admin_incident_path, class: "button" %>
 </div>
 
+<p class="muted"><%= link_to "#{Incident.unresolved.count} unresolved", admin_incidents_path(state: "unresolved") %>, <%= link_to "#{Incident.resolved.count} resolved", admin_incidents_path(state: "resolved") %>.<%= " Showing only the #{@state} ones. " if @state %><%= link_to "Show all", admin_incidents_path if @state %></p>
+
 <% if @incidents.any? %>
   <table class="table">
     <thead><tr><th>Title</th><th>Status</th><th>Impact</th><th>Monitor</th><th>Started (UTC)</th></tr></thead>
@@ -20,5 +22,5 @@
     </tbody>
   </table>
 <% else %>
-  <p class="muted">No incidents.</p>
+  <p class="muted"><%= @state ? "No #{@state} incidents." : "No incidents." %></p>
 <% end %>

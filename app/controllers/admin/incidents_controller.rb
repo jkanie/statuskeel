@@ -1,8 +1,13 @@
 class Admin::IncidentsController < Admin::BaseController
   before_action :set_incident, only: %i[show edit update destroy]
 
+  # ?state=unresolved or ?state=resolved keeps 1 side of the counts at the top. Any other value lists every incident.
+  STATES = %w[unresolved resolved].freeze
+
   def index
     @incidents = Incident.newest_first.includes(:uptime_monitor)
+    @state = params[:state].to_s if STATES.include?(params[:state].to_s)
+    @incidents = @incidents.public_send(@state) if @state
   end
 
   def show
