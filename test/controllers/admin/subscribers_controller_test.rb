@@ -34,4 +34,27 @@ class Admin::SubscribersControllerTest < ActionDispatch::IntegrationTest
     get admin_subscribers_path
     assert_select "tbody tr", 3
   end
+
+  test "keeps only the confirmed or the waiting addresses" do
+    get admin_subscribers_path, params: { state: "confirmed" }
+    assert_select "tbody td", text: "reader@example.com"
+    assert_select "tbody tr", 1
+    assert_select "p", text: /1 address confirmed\./
+
+    get admin_subscribers_path, params: { state: "waiting" }
+    assert_select "tbody td", text: "maybe@example.com"
+    assert_select "tbody tr", 1
+    assert_select "p", text: /1 address waiting\./
+
+    # The state works with the search, and the form keeps it.
+    get admin_subscribers_path, params: { state: "waiting", q: "READER" }
+    assert_select "tbody tr", 0
+    assert_select "p", text: /0 addresses waiting holding "READER"/
+    assert_select "input[type=hidden][name=state][value=waiting]"
+    assert_select "a[href=?]", admin_subscribers_path(state: "confirmed", q: "READER"), text: "1 confirmed"
+
+    get admin_subscribers_path, params: { state: "everyone" }
+    assert_select "tbody tr", 2
+    assert_select "input[name=state]", 0
+  end
 end
