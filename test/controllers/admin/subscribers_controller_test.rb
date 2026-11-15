@@ -57,4 +57,30 @@ class Admin::SubscribersControllerTest < ActionDispatch::IntegrationTest
     assert_select "tbody tr", 2
     assert_select "input[name=state]", 0
   end
+
+  test "down-loads the list as CSV, with the same filters" do
+    travel_to Time.utc(2027, 3, 10, 12) do
+      get admin_subscribers_path(format: :csv)
+      assert_response :success
+      assert_equal "text/csv", response.media_type
+      assert_match(/attachment; filename="subscribers-2027-03-10\.csv"/, response.headers["Content-Disposition"])
+      confirmed, unconfirmed = subscribers(:confirmed), subscribers(:unconfirmed)
+      rows = [ confirmed, unconfirmed ].sort_by { |s| [ s.created_at, s.id ] }.reverse.map do |s|
+        [ s.email_address, s.confirmed_at&.utc&.iso8601, s.created_at.utc.iso8601 ].join(",")
+      end
+      assert_equal [ "email_address,confirmed_at,subscribed_at", *rows ].join("\n") + "\n", response.body
+      assert_includes response.body, "\nmaybe@example.com,,"
+
+      get admin_subscribers_path(format: :csv, state: "confirmed")
+      assert_equal 2, response.body.lines.size
+      assert_match(/\Areader@example\.com,\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ,/, response.body.lines.last)
+
+      get admin_subscribers_path(format: :csv, q: "nobody")
+      assert_equal "email_address,confirmed_at,subscribed_at\n", response.body
+    end
+
+    get admin_subscribers_path, params: { state: "waiting", q: "MAYBE" }
+    assert_select "a[href=?]", admin_subscribers_path(format: :csv, state: "waiting", q: "MAYBE"),
+                  text: "Down-load this list as CSV"
+  end
 end

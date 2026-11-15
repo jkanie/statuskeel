@@ -11,6 +11,7 @@
 <% if @query.present? || @state %>
   <p class="muted"><%= pluralize(@subscribers.size, "address") %><%= " #{@state == "confirmed" ? "confirmed" : "waiting"}" if @state %><%= %( holding "#{@query}") if @query.present? %>. <%= link_to "Show all", admin_subscribers_path %></p>
 <% end %>
+<p><%= link_to "Down-load this list as CSV", admin_subscribers_path(format: :csv, state: @state, q: @query.presence) %></p>
 
 <table class="table">
   <thead><tr><th>E-mail address</th><th>Confirmed (UTC)</th><th></th></tr></thead>
