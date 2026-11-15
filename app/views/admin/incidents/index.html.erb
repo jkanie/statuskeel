@@ -4,7 +4,7 @@
   <%= link_to "New incident", new_admin_incident_path, class: "button" %>
 </div>
 
-<p class="muted"><%= link_to "#{Incident.unresolved.count} unresolved", admin_incidents_path(state: "unresolved") %>, <%= link_to "#{Incident.resolved.count} resolved", admin_incidents_path(state: "resolved") %>.<%= " Showing only the #{@state} ones. " if @state %><%= link_to "Show all", admin_incidents_path if @state %></p>
+<p class="muted"><%= link_to "#{Incident.unresolved.count} unresolved", admin_incidents_path(state: "unresolved", monitor: @monitor&.id) %>, <%= link_to "#{Incident.resolved.count} resolved", admin_incidents_path(state: "resolved", monitor: @monitor&.id) %>.<%= " Showing only the #{@state} ones. " if @state %><%= " Showing only the incidents of #{@monitor.name}. " if @monitor %><%= link_to "Show all", admin_incidents_path if @state || @monitor %></p>
 
 <% if @incidents.any? %>
   <table class="table">
@@ -15,12 +15,12 @@
           <td><%= link_to incident.title, admin_incident_path(incident) %><%= " (automatic)" if incident.automatic? %></td>
           <td><%= incident.status.humanize %></td>
           <td><%= incident.impact.humanize %></td>
-          <td><%= incident.uptime_monitor&.name %></td>
+          <td><%= link_to incident.uptime_monitor.name, admin_incidents_path(monitor: incident.uptime_monitor.id, state: @state) if incident.uptime_monitor %></td>
           <td><%= incident.started_at.utc.to_fs(:db) %></td>
         </tr>
       <% end %>
     </tbody>
   </table>
 <% else %>
-  <p class="muted"><%= @state ? "No #{@state} incidents." : "No incidents." %></p>
+  <p class="muted">No <%= "#{@state} " if @state %>incidents<%= " of #{@monitor.name}" if @monitor %>.</p>
 <% end %>

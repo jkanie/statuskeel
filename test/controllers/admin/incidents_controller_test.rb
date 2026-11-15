@@ -97,4 +97,33 @@ class Admin::IncidentsControllerTest < ActionDispatch::IntegrationTest
     assert_select "tbody tr", 1
     assert_select "a", text: "Show all", count: 0
   end
+
+  test "keeps only the incidents of 1 monitor" do
+    website, api = uptime_monitors(:website), uptime_monitors(:api)
+    Incident.open!(title: "Site down", body: "Looking.", uptime_monitor: website)
+    Incident.open!(title: "Site slow", body: "Looking.", uptime_monitor: website).post_update!(status: :resolved, body: "Fixed.")
+    Incident.open!(title: "API errors", body: "Looking.", uptime_monitor: api)
+    Incident.open!(title: "Billing note", body: "Looking.")
+
+    get admin_incidents_path
+    assert_select "tbody tr", 4
+    assert_select "tbody a[href=?]", admin_incidents_path(monitor: website.id), text: "Website", count: 2
+
+    get admin_incidents_path, params: { monitor: website.id }
+    assert_select "tbody tr", 2
+    assert_select "p", text: /Showing only the incidents of Website\./
+    assert_select "a[href=?]", admin_incidents_path(state: "unresolved", monitor: website.id)
+    assert_select "a[href=?]", admin_incidents_path, text: "Show all"
+
+    get admin_incidents_path, params: { monitor: website.id, state: "resolved" }
+    assert_select "tbody tr", 1
+    assert_select "tbody a", "Site slow"
+
+    get admin_incidents_path, params: { monitor: uptime_monitors(:paused).id }
+    assert_select "p", text: "No incidents of Old site."
+
+    get admin_incidents_path, params: { monitor: 0 }
+    assert_select "tbody tr", 4
+    assert_select "a", text: "Show all", count: 0
+  end
 end

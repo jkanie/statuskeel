@@ -4,10 +4,13 @@ class Admin::IncidentsController < Admin::BaseController
   # ?state=unresolved or ?state=resolved keeps 1 side of the counts at the top. Any other value lists every incident.
   STATES = %w[unresolved resolved].freeze
 
+  # ?monitor=ID keeps the incidents of 1 monitor, with or without ?state. An id with no monitor lists every incident.
   def index
     @incidents = Incident.newest_first.includes(:uptime_monitor)
     @state = params[:state].to_s if STATES.include?(params[:state].to_s)
     @incidents = @incidents.public_send(@state) if @state
+    @monitor = UptimeMonitor.find_by(id: params[:monitor]) if params[:monitor].present?
+    @incidents = @incidents.where(uptime_monitor: @monitor) if @monitor
   end
 
   def show
