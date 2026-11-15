@@ -1,7 +1,10 @@
 <% content_for :title, "Monitors" %>
 <div class="page-head">
   <h1>Monitors</h1>
-  <%= link_to "New monitor", new_admin_monitor_path, class: "button" %>
+  <div class="actions">
+    <%= button_to "Check all now", check_all_admin_monitors_path if UptimeMonitor.active.exists? %>
+    <%= link_to "New monitor", new_admin_monitor_path, class: "button" %>
+  </div>
 </div>
 
 <% if @monitors.any? %>

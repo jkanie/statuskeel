@@ -45,6 +45,13 @@ class Admin::MonitorsController < Admin::BaseController
     redirect_to admin_monitor_path(@monitor), notice: "Check queued."
   end
 
+  # Queues a check of every active monitor at once, such as after a deploy. A paused monitor stays paused.
+  def check_all
+    monitors = UptimeMonitor.active.to_a
+    monitors.each { |monitor| CheckMonitorJob.perform_later(monitor) }
+    redirect_to admin_monitors_path, notice: "#{helpers.pluralize(monitors.size, "check")} queued."
+  end
+
   private
     def set_monitor
       @monitor = UptimeMonitor.find(params[:id])

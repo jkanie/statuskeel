@@ -20,6 +20,7 @@ Rails.application.routes.draw do
     root to: redirect("/admin/monitors")
     resources :monitors do
       post :check, on: :member
+      post :check_all, on: :collection
     end
     resources :incidents do
       resources :updates, only: :create, controller: "incident_updates"

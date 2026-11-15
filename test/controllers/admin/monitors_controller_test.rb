@@ -64,4 +64,30 @@ class Admin::MonitorsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_redirected_to admin_monitor_path(monitor)
   end
+
+  test "check all now enqueues a check of every active monitor" do
+    active = UptimeMonitor.active.ordered.to_a
+    assert active.any?
+    assert UptimeMonitor.where(active: false).exists?
+
+    get admin_monitors_path
+    assert_select "form[action=?] button", check_all_admin_monitors_path, text: "Check all now"
+
+    assert_enqueued_jobs active.size, only: CheckMonitorJob do
+      post check_all_admin_monitors_path
+    end
+    active.each { |monitor| assert_enqueued_with job: CheckMonitorJob, args: [ monitor ] }
+    assert_redirected_to admin_monitors_path
+    assert_equal "#{active.size} #{active.size == 1 ? "check" : "checks"} queued.", flash[:notice]
+  end
+
+  test "check all now is not offered when every monitor is paused" do
+    UptimeMonitor.update_all(active: false)
+    get admin_monitors_path
+    assert_select "form[action=?]", check_all_admin_monitors_path, 0
+    assert_no_enqueued_jobs only: CheckMonitorJob do
+      post check_all_admin_monitors_path
+    end
+    assert_equal "0 checks queued.", flash[:notice]
+  end
 end

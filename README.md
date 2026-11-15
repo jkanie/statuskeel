@@ -13,6 +13,7 @@ It is for small teams and open-source projects that want a self-hosted status pa
 - Incidents open on their own when a monitor reaches its failure threshold and resolve on their own when it recovers, each time with an automatic update.
 - Incidents by hand: statuses investigating, identified, monitoring, resolved. Impact none, minor, major, critical. Updates have rich text bodies (Action Text).
 - A resolved incident on the public page shows how long it lasted, from its start to its resolution in whole days, hours, minutes ("lasted 2 hours 5 minutes").
+- The admin list of monitors has a "Check all now" button that queues a check of every active monitor at once, such as after a deploy. Paused monitors are left out, and the button is not shown when every monitor is paused.
 - The admin list of incidents counts the unresolved and the resolved ones at the top. Each count is a link that keeps only those incidents.
 - E-mail subscribers with double opt-in. Every e-mail has an unsubscribe link and supports RFC 8058 one-click unsubscribe. The admin list of subscribers finds an address by any part of it, in any case. Its 2 counts at the top are links that keep only the confirmed addresses or only the ones waiting for confirmation, with or without a search.
 - Incidents by e-mail (Action Mailbox): an admin's e-mail to `incidents@` opens an incident, a reply to `incident+<id>@` adds an update. A reply that starts with a line such as `status: resolved` also sets the status. Mail from other senders is bounced.
