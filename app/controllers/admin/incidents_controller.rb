@@ -14,6 +14,12 @@ class Admin::IncidentsController < Admin::BaseController
     # ?impact=major keeps 1 impact, with the other filters too. Any other value keeps every impact.
     @impact = params[:impact].to_s if Incident::IMPACTS.include?(params[:impact].to_s)
     @incidents = @incidents.where(impact: @impact) if @impact
+    # ?q=checkout keeps the incidents whose title holds the text, in any case, as the monitor search does.
+    @query = params[:q].to_s.strip
+    if @query.present?
+      like = "%#{Incident.sanitize_sql_like(@query.downcase, "!")}%"
+      @incidents = @incidents.where("LOWER(title) LIKE ? ESCAPE '!'", like)
+    end
   end
 
   def show

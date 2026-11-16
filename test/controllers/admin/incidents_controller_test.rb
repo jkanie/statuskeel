@@ -153,4 +153,33 @@ class Admin::IncidentsControllerTest < ActionDispatch::IntegrationTest
     assert_select "tbody tr", 3
     assert_select "a", text: "Show all", count: 0
   end
+
+  test "finds incidents by title, with the other filters" do
+    website = uptime_monitors(:website)
+    Incident.open!(title: "Site down", body: "Looking.", impact: :major, uptime_monitor: website)
+    Incident.open!(title: "Checkout 100% slow", body: "Looking.")
+    Incident.open!(title: "Site slow", body: "Looking.").post_update!(status: :resolved, body: "Fixed.")
+
+    get admin_incidents_path, params: { q: "SITE" }
+    assert_select "tbody tr", 2
+    assert_select "input[name=q][value=?]", "SITE"
+    assert_select "p.muted a[href=?]", admin_incidents_path(state: "resolved", q: "SITE")
+    assert_select "tbody a[href=?]", admin_incidents_path(impact: "major", q: "SITE"), text: "Major"
+    assert_select "a[href=?]", admin_incidents_path, text: "Show all"
+
+    # % is a plain character, not "any text".
+    get admin_incidents_path, params: { q: "100%" }
+    assert_select "tbody tr", 1
+    assert_select "tbody a", "Checkout 100% slow"
+    get admin_incidents_path, params: { q: "%" }
+    assert_select "tbody tr", 1
+
+    get admin_incidents_path, params: { q: " site ", state: "unresolved", monitor: website.id }
+    assert_select "tbody tr", 1
+    assert_select "tbody a", "Site down"
+    assert_select "input[type=hidden][name=monitor][value=?]", website.id.to_s
+
+    get admin_incidents_path, params: { q: "card", impact: "major" }
+    assert_select "p", text: "No major impact incidents with \"card\" in the title."
+  end
 end
