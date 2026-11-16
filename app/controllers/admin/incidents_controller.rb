@@ -11,6 +11,9 @@ class Admin::IncidentsController < Admin::BaseController
     @incidents = @incidents.public_send(@state) if @state
     @monitor = UptimeMonitor.find_by(id: params[:monitor]) if params[:monitor].present?
     @incidents = @incidents.where(uptime_monitor: @monitor) if @monitor
+    # ?impact=major keeps 1 impact, with the other filters too. Any other value keeps every impact.
+    @impact = params[:impact].to_s if Incident::IMPACTS.include?(params[:impact].to_s)
+    @incidents = @incidents.where(impact: @impact) if @impact
   end
 
   def show

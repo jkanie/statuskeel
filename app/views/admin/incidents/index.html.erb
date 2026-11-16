@@ -4,7 +4,7 @@
   <%= link_to "New incident", new_admin_incident_path, class: "button" %>
 </div>
 
-<p class="muted"><%= link_to "#{Incident.unresolved.count} unresolved", admin_incidents_path(state: "unresolved", monitor: @monitor&.id) %>, <%= link_to "#{Incident.resolved.count} resolved", admin_incidents_path(state: "resolved", monitor: @monitor&.id) %>.<%= " Showing only the #{@state} ones. " if @state %><%= " Showing only the incidents of #{@monitor.name}. " if @monitor %><%= link_to "Show all", admin_incidents_path if @state || @monitor %></p>
+<p class="muted"><%= link_to "#{Incident.unresolved.count} unresolved", admin_incidents_path(state: "unresolved", monitor: @monitor&.id, impact: @impact) %>, <%= link_to "#{Incident.resolved.count} resolved", admin_incidents_path(state: "resolved", monitor: @monitor&.id, impact: @impact) %>.<%= " Showing only the #{@state} ones. " if @state %><%= " Showing only the incidents of #{@monitor.name}. " if @monitor %><%= " Showing only the #{@impact} impact ones. " if @impact %><%= link_to "Show all", admin_incidents_path if @state || @monitor || @impact %></p>
 
 <% if @incidents.any? %>
   <table class="table">
@@ -14,7 +14,7 @@
         <tr id="<%= dom_id(incident) %>">
           <td><%= link_to incident.title, admin_incident_path(incident) %><%= " (automatic)" if incident.automatic? %></td>
           <td><%= incident.status.humanize %></td>
-          <td><%= incident.impact.humanize %></td>
+          <td><%= link_to incident.impact.humanize, admin_incidents_path(impact: incident.impact, state: @state, monitor: @monitor&.id) %></td>
           <td><%= link_to incident.uptime_monitor.name, admin_incidents_path(monitor: incident.uptime_monitor.id, state: @state) if incident.uptime_monitor %></td>
           <td><%= incident.started_at.utc.to_fs(:db) %></td>
         </tr>
@@ -22,5 +22,5 @@
     </tbody>
   </table>
 <% else %>
-  <p class="muted">No <%= "#{@state} " if @state %>incidents<%= " of #{@monitor.name}" if @monitor %>.</p>
+  <p class="muted">No <%= "#{@state} " if @state %><%= "#{@impact} impact " if @impact %>incidents<%= " of #{@monitor.name}" if @monitor %>.</p>
 <% end %>

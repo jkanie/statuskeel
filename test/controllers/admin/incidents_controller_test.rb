@@ -126,4 +126,31 @@ class Admin::IncidentsControllerTest < ActionDispatch::IntegrationTest
     assert_select "tbody tr", 4
     assert_select "a", text: "Show all", count: 0
   end
+
+  test "keeps only 1 impact, with the other filters" do
+    website = uptime_monitors(:website)
+    Incident.open!(title: "Site down", body: "Looking.", impact: :major, uptime_monitor: website)
+    Incident.open!(title: "Site slow", body: "Looking.", uptime_monitor: website)
+    Incident.open!(title: "Card errors", body: "Looking.", impact: :major).post_update!(status: :resolved, body: "Fixed.")
+
+    get admin_incidents_path
+    assert_select "tbody a[href=?]", admin_incidents_path(impact: "major"), text: "Major", count: 2
+
+    get admin_incidents_path, params: { impact: "major" }
+    assert_select "tbody tr", 2
+    assert_select "p", text: /Showing only the major impact ones\./
+    assert_select "a[href=?]", admin_incidents_path(state: "resolved", impact: "major")
+    assert_select "a[href=?]", admin_incidents_path, text: "Show all"
+
+    get admin_incidents_path, params: { impact: "major", state: "unresolved", monitor: website.id }
+    assert_select "tbody tr", 1
+    assert_select "tbody a", "Site down"
+
+    get admin_incidents_path, params: { impact: "critical" }
+    assert_select "p", text: "No critical impact incidents."
+
+    get admin_incidents_path, params: { impact: "huge" }
+    assert_select "tbody tr", 3
+    assert_select "a", text: "Show all", count: 0
+  end
 end
