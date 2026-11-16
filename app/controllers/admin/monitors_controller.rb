@@ -14,6 +14,12 @@ class Admin::MonitorsController < Admin::BaseController
     elsif @state
       @monitors = @monitors.active.where(status: @state)
     end
+    # ?q= keeps the monitors whose name or URL holds the text, in any case, as the subscriber search does.
+    @query = params[:q].to_s.strip
+    if @query.present?
+      like = "%#{UptimeMonitor.sanitize_sql_like(@query.downcase, "!")}%"
+      @monitors = @monitors.where("LOWER(name) LIKE :like ESCAPE '!' OR LOWER(url) LIKE :like ESCAPE '!'", like:)
+    end
   end
 
   def show

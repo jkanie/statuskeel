@@ -8,7 +8,14 @@
 </div>
 
 <% if @counts.values.sum.positive? %>
-  <p class="muted"><%= safe_join(Admin::MonitorsController::STATES.map { |state| link_to("#{@counts.fetch(state, 0)} #{state}", admin_monitors_path(state:)) }, ", ") %>.<%= " Showing only the #{@state} ones. " if @state %><%= link_to "Show all", admin_monitors_path if @state %></p>
+  <p class="muted"><%= safe_join(Admin::MonitorsController::STATES.map { |state| link_to("#{@counts.fetch(state, 0)} #{state}", admin_monitors_path(state:, q: @query.presence)) }, ", ") %>.<%= " Showing only the #{@state} ones. " if @state %><%= link_to "Show all", admin_monitors_path if @state || @query.present? %></p>
+
+  <%= form_with url: admin_monitors_path, method: :get, class: "search" do |form| %>
+    <%= form.label :q, "Find a monitor by name or URL" %>
+    <%= form.search_field :q, value: @query %>
+    <%= form.hidden_field :state, value: @state if @state %>
+    <%= form.submit "Find", name: nil %>
+  <% end %>
 <% end %>
 
 <% if @monitors.any? %>
@@ -29,6 +36,8 @@
       <% end %>
     </tbody>
   </table>
+<% elsif @query.present? %>
+  <p class="muted">No<%= " #{@state}" if @state %> monitor's name or URL holds "<%= @query %>".</p>
 <% elsif @state %>
   <p class="muted">No <%= @state %> monitors.</p>
 <% else %>

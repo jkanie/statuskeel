@@ -44,6 +44,29 @@ class Admin::MonitorsControllerTest < ActionDispatch::IntegrationTest
     assert_select "a", text: "Show all", count: 0
   end
 
+  test "index finds monitors by name or URL, with a state too" do
+    get admin_monitors_path(q: "api")
+    assert_select "table tbody tr", 1
+    assert_select "td a", text: "API"
+    assert_select "input[name=q][value=?]", "api"
+    assert_select "a[href=?]", admin_monitors_path, text: "Show all"
+
+    # The URL counts too, in any case, and a count link keeps the text.
+    get admin_monitors_path(q: uptime_monitors(:paused).url.upcase)
+    assert_select "td a", text: "Old site"
+    assert_select "p.muted a[href=?]", admin_monitors_path(state: "up", q: uptime_monitors(:paused).url.upcase)
+
+    # % and _ are taken as written, not as patterns.
+    get admin_monitors_path(q: "%")
+    assert_select "table", 0
+    assert_select "p.muted", text: "No monitor's name or URL holds \"%\"."
+
+    get admin_monitors_path(q: "api", state: "paused")
+    assert_select "table", 0
+    assert_select "input[type=hidden][name=state][value=paused]"
+    assert_select "p.muted", text: "No paused monitor's name or URL holds \"api\"."
+  end
+
   test "index has no counts when there is no monitor" do
     UptimeMonitor.destroy_all
     get admin_monitors_path
