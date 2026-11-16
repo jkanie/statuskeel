@@ -16,6 +16,13 @@ class UptimeMonitorTest < ActiveSupport::TestCase
     assert monitor.pending?
   end
 
+  test "paused and active split the monitors between them" do
+    paused = UptimeMonitor.paused.to_a
+    assert_equal [ uptime_monitors(:paused) ], paused
+    assert_equal UptimeMonitor.count, paused.size + UptimeMonitor.active.count
+    assert_empty UptimeMonitor.paused.ids & UptimeMonitor.active.ids
+  end
+
   test "accepts only http and https URLs" do
     assert build(url: "http://shop.example.com").valid?
     %w[ftp://shop.example.com file:///etc/passwd javascript:alert(1) shop.example.com].each do |url|

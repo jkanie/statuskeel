@@ -7,6 +7,10 @@
   </div>
 </div>
 
+<% if @counts.values.sum.positive? %>
+  <p class="muted"><%= safe_join(Admin::MonitorsController::STATES.map { |state| link_to("#{@counts.fetch(state, 0)} #{state}", admin_monitors_path(state:)) }, ", ") %>.<%= " Showing only the #{@state} ones. " if @state %><%= link_to "Show all", admin_monitors_path if @state %></p>
+<% end %>
+
 <% if @monitors.any? %>
   <table class="table">
     <thead>
@@ -25,6 +29,8 @@
       <% end %>
     </tbody>
   </table>
+<% elsif @state %>
+  <p class="muted">No <%= @state %> monitors.</p>
 <% else %>
   <p class="muted">No monitors yet.</p>
 <% end %>

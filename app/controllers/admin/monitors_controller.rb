@@ -1,8 +1,19 @@
 class Admin::MonitorsController < Admin::BaseController
   before_action :set_monitor, only: %i[show edit update destroy check]
 
+  # ?state=up, down or pending keeps the active monitors in that state, and ?state=paused the paused ones, as the
+  # counts at the top give them. Any other value lists every monitor.
+  STATES = %w[up down pending paused].freeze
+
   def index
+    @counts = UptimeMonitor.active.group(:status).count.merge("paused" => UptimeMonitor.paused.count)
+    @state = params[:state].to_s if STATES.include?(params[:state].to_s)
     @monitors = UptimeMonitor.ordered
+    if @state == "paused"
+      @monitors = @monitors.paused
+    elsif @state
+      @monitors = @monitors.active.where(status: @state)
+    end
   end
 
   def show

@@ -24,6 +24,7 @@ class UptimeMonitor < ApplicationRecord
   validate :expected_statuses_are_ordered
 
   scope :active, -> { where(active: true) }
+  scope :paused, -> { where(active: false) }
   scope :ordered, -> { order(:name, :id) }
   scope :due, ->(at = Time.current) { active.where(next_check_at: nil).or(active.where(next_check_at: ..at)) }
 

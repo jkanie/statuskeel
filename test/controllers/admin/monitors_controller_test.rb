@@ -15,6 +15,42 @@ class Admin::MonitorsControllerTest < ActionDispatch::IntegrationTest
     assert_select "table tbody tr", 1
   end
 
+  test "index counts each state and keeps only 1 of them" do
+    uptime_monitors(:api).update!(status: :down)
+    get admin_monitors_path
+    assert_select "p.muted a", text: "1 up"
+    assert_select "p.muted a[href=?]", admin_monitors_path(state: "down"), text: "1 down"
+    assert_select "p.muted a", text: "0 pending"
+    assert_select "p.muted a", text: "1 paused"
+    assert_select "table tbody tr", 3
+
+    get admin_monitors_path(state: "down")
+    assert_select "table tbody tr", 1
+    assert_select "td a", text: "API"
+    assert_select "p.muted", text: /Showing only the down ones/
+    assert_select "a[href=?]", admin_monitors_path, text: "Show all"
+
+    # A paused monitor counts as paused whatever its last state, and is not counted as up or down.
+    get admin_monitors_path(state: "paused")
+    assert_select "table tbody tr", 1
+    assert_select "td a", text: "Old site"
+
+    get admin_monitors_path(state: "pending")
+    assert_select "table", 0
+    assert_select "p.muted", text: "No pending monitors."
+
+    get admin_monitors_path(state: "sideways")
+    assert_select "table tbody tr", 3
+    assert_select "a", text: "Show all", count: 0
+  end
+
+  test "index has no counts when there is no monitor" do
+    UptimeMonitor.destroy_all
+    get admin_monitors_path
+    assert_select "p.muted", text: "No monitors yet."
+    assert_select "p.muted a", 0
+  end
+
   test "create" do
     assert_difference -> { UptimeMonitor.count } => 1 do
       post admin_monitors_path, params: { uptime_monitor: { name: "Shop", url: "https://shop.example.com", interval_seconds: 120,
