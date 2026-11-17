@@ -23,7 +23,9 @@ class Admin::MonitorsController < Admin::BaseController
   end
 
   def show
-    @checks = @monitor.checks.recent.limit(50)
+    # ?result=down keeps the failed checks, such as to read the errors of a monitor that fails now and then.
+    @failed_only = params[:result] == "down"
+    @checks = (@failed_only ? @monitor.checks.failed : @monitor.checks).recent.limit(50)
     @history = @monitor.history
   end
 

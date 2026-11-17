@@ -19,7 +19,11 @@
   <dt>Badge</dt><dd><code><%= badge_url(@monitor, format: :svg) %></code></dd>
 </dl>
 
-<h2>Last 50 checks</h2>
+<h2>Last 50 <%= "failed " if @failed_only %>checks</h2>
+<p class="muted"><%= @failed_only ? link_to("Show every check", admin_monitor_path(@monitor)) : link_to("Show only the failed checks", admin_monitor_path(@monitor, result: "down")) %></p>
+<% if @checks.empty? %>
+  <p class="muted"><%= @failed_only ? "No failed checks." : "No checks yet." %></p>
+<% else %>
 <table class="table">
   <thead><tr><th>Checked at (UTC)</th><th>Result</th><th>HTTP</th><th>Time (ms)</th><th>Error</th></tr></thead>
   <tbody>
@@ -34,3 +38,4 @@
     <% end %>
   </tbody>
 </table>
+<% end %>

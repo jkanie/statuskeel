@@ -4,4 +4,5 @@ class Check < ApplicationRecord
 
   scope :recent, -> { order(checked_at: :desc, id: :desc) }
   scope :older_than, ->(time) { where(checked_at: ...time) }
+  scope :failed, -> { where(up: false) }
 end

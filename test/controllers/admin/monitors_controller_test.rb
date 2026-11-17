@@ -15,6 +15,31 @@ class Admin::MonitorsControllerTest < ActionDispatch::IntegrationTest
     assert_select "table tbody tr", 1
   end
 
+  test "show keeps only the failed checks with result=down" do
+    monitor = uptime_monitors(:website)
+    get admin_monitor_path(monitor)
+    assert_select "p", text: "No checks yet."
+    get admin_monitor_path(monitor, result: "down")
+    assert_select "h2", text: "Last 50 failed checks"
+    assert_select "p", text: "No failed checks."
+
+    monitor.record_check!(up_result)
+    monitor.record_check!(down_result)
+    monitor.record_check!(up_result)
+    get admin_monitor_path(monitor)
+    assert_select "h2", text: "Last 50 checks"
+    assert_select "table tbody tr", 3
+    assert_select "a[href=?]", admin_monitor_path(monitor, result: "down"), text: "Show only the failed checks"
+
+    get admin_monitor_path(monitor, result: "down")
+    assert_select "table tbody tr", 1
+    assert_select "table tbody tr td span.state-down", text: "down"
+    assert_select "a[href=?]", admin_monitor_path(monitor), text: "Show every check"
+    # Any other value lists every check.
+    get admin_monitor_path(monitor, result: "up")
+    assert_select "table tbody tr", 3
+  end
+
   test "index counts each state and keeps only 1 of them" do
     uptime_monitors(:api).update!(status: :down)
     get admin_monitors_path
